@@ -1,5 +1,6 @@
-import streamlit as st
 import openai
+import pandas as pd
+import streamlit as st
 
 
 st.set_page_config(page_title="AI 텍스트 요약기", page_icon="📝")
@@ -29,8 +30,8 @@ uploaded_image = st.file_uploader(
 if uploaded_image:
     st.image(uploaded_image, caption=f"업로드한 이미지: {uploaded_image.name}")
 
-tab_summary, tab_translate, tab_feedback = st.tabs(
-    ["텍스트 요약", "영어 → 한국어 번역", "글쓰기 피드백"]
+tab_summary, tab_translate, tab_feedback, tab_length = st.tabs(
+    ["텍스트 요약", "영어 → 한국어 번역", "글쓰기 피드백", "텍스트 길이 시각화"]
 )
 
 
@@ -40,8 +41,10 @@ def require_api_key():
 
 
 with tab_summary:
-    summary_text = st.text_area("요약할 텍스트를 입력하세요.", height=220, key="summary_text")
-    if st.button("요약하기", key="summary_button"):
+    summary_text = st.text_area(
+        "", height=220, key="summary_text", placeholder="텍스트를 입력하세요."
+    )
+    if st.button("실행", key="summary_button"):
         if not summary_text.strip():
             st.warning("텍스트를 입력하세요.")
         elif not has_api_key:
@@ -68,8 +71,10 @@ with tab_summary:
                     st.error(f"요약 요청 처리 중 오류가 발생했습니다: {exc}")
 
 with tab_translate:
-    translate_text = st.text_area("번역할 영어 텍스트를 입력하세요.", height=220, key="translate_text")
-    if st.button("번역하기", key="translate_button"):
+    translate_text = st.text_area(
+        "", height=220, key="translate_text", placeholder="텍스트를 입력하세요."
+    )
+    if st.button("실행", key="translate_button"):
         if not translate_text.strip():
             st.warning("텍스트를 입력하세요.")
         elif not has_api_key:
@@ -96,8 +101,10 @@ with tab_translate:
                     st.error(f"번역 요청 처리 중 오류가 발생했습니다: {exc}")
 
 with tab_feedback:
-    feedback_text = st.text_area("피드백 받을 글을 입력하세요.", height=220, key="feedback_text")
-    if st.button("피드백 받기", key="feedback_button"):
+    feedback_text = st.text_area(
+        "", height=220, key="feedback_text", placeholder="텍스트를 입력하세요."
+    )
+    if st.button("실행", key="feedback_button"):
         if not feedback_text.strip():
             st.warning("텍스트를 입력하세요.")
         elif not has_api_key:
@@ -126,3 +133,19 @@ with tab_feedback:
                     st.write(feedback)
                 except Exception as exc:
                     st.error(f"피드백 요청 처리 중 오류가 발생했습니다: {exc}")
+
+with tab_length:
+    length_text = st.text_area(
+        "", height=220, key="length_text", placeholder="텍스트를 입력하세요."
+    )
+    if st.button("실행", key="length_button"):
+        if not length_text.strip():
+            st.warning("텍스트를 입력하세요.")
+        else:
+            char_count = len(length_text)
+            word_count = len(length_text.split())
+            data = pd.DataFrame(
+                {"항목": ["문자 수", "단어 수"], "값": [char_count, word_count]}
+            ).set_index("항목")
+            st.bar_chart(data)
+            st.write(f"문자 수: {char_count}, 단어 수: {word_count}")
