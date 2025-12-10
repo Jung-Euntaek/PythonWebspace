@@ -18,6 +18,13 @@ with st.expander("도움말 보기"):
 api_key = st.sidebar.text_input("OpenAI API Key", type="password")
 text = st.text_area("요약·번역할 텍스트를 입력하세요.", height=220)
 
+uploaded_image = st.file_uploader(
+    "이미지를 업로드하면 화면에 표시됩니다.",
+    type=["png", "jpg", "jpeg", "webp", "bmp", "svg"],
+)
+if uploaded_image:
+    st.image(uploaded_image, caption=f"업로드한 이미지: {uploaded_image.name}")
+
 if not api_key:
     st.info("API Key를 입력하세요")
 else:
