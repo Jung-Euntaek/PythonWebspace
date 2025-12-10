@@ -16,7 +16,11 @@ with st.expander("도움말 보기"):
     )
 
 api_key = st.sidebar.text_input("OpenAI API Key", type="password")
-text = st.text_area("요약·번역할 텍스트를 입력하세요.", height=220)
+has_api_key = bool(api_key)
+if not has_api_key:
+    st.sidebar.warning("API Key를 입력하세요.")
+
+client = openai.OpenAI(api_key=api_key) if has_api_key else None
 
 uploaded_image = st.file_uploader(
     "이미지를 업로드하면 화면에 표시됩니다.",
@@ -25,54 +29,100 @@ uploaded_image = st.file_uploader(
 if uploaded_image:
     st.image(uploaded_image, caption=f"업로드한 이미지: {uploaded_image.name}")
 
-if not api_key:
-    st.info("API Key를 입력하세요")
-else:
-    client = openai.OpenAI(api_key=api_key)
+tab_summary, tab_translate, tab_feedback = st.tabs(
+    ["텍스트 요약", "영어 → 한국어 번역", "글쓰기 피드백"]
+)
 
-    action = None
-    if st.button("요약하기"):
-        action = "summary"
-    if st.button("영어 → 한국어 번역"):
-        action = "translate"
 
-    if action:
-        if not text.strip():
+def require_api_key():
+    st.warning("API Key를 입력한 뒤 다시 시도하세요.")
+    return False
+
+
+with tab_summary:
+    summary_text = st.text_area("요약할 텍스트를 입력하세요.", height=220, key="summary_text")
+    if st.button("요약하기", key="summary_button"):
+        if not summary_text.strip():
             st.warning("텍스트를 입력하세요.")
+        elif not has_api_key:
+            require_api_key()
         else:
-            with st.spinner("처리 중..."):
+            with st.spinner("요약 중..."):
                 try:
-                    if action == "summary":
-                        messages = [
+                    response = client.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=[
                             {
                                 "role": "system",
                                 "content": "Summarize the user's text in Korean as succinctly as possible.",
                             },
-                            {"role": "user", "content": text},
-                        ]
-                        title = "요약 결과"
-                    else:
-                        messages = [
+                            {"role": "user", "content": summary_text},
+                        ],
+                        temperature=0.3,
+                        max_tokens=256,
+                    )
+                    summary = response.choices[0].message.content.strip()
+                    st.success("요약이 완료되었습니다.")
+                    st.write(summary)
+                except Exception as exc:
+                    st.error(f"요약 요청 처리 중 오류가 발생했습니다: {exc}")
+
+with tab_translate:
+    translate_text = st.text_area("번역할 영어 텍스트를 입력하세요.", height=220, key="translate_text")
+    if st.button("번역하기", key="translate_button"):
+        if not translate_text.strip():
+            st.warning("텍스트를 입력하세요.")
+        elif not has_api_key:
+            require_api_key()
+        else:
+            with st.spinner("번역 중..."):
+                try:
+                    response = client.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=[
                             {
                                 "role": "system",
                                 "content": "Translate the user's English text into Korean. Return only the translated Korean text.",
                             },
-                            {"role": "user", "content": text},
-                        ]
-                        title = "번역 결과"
-
-                    response = client.chat.completions.create(
-                        model="gpt-3.5-turbo",
-                        messages=messages,
+                            {"role": "user", "content": translate_text},
+                        ],
                         temperature=0.3,
                         max_tokens=256,
                     )
-                    result = response.choices[0].message.content.strip()
-
-                    if action == "summary":
-                        st.success("요약이 완료되었습니다.")
-                    else:
-                        st.success(title)
-                    st.write(result)
+                    translated = response.choices[0].message.content.strip()
+                    st.success("번역 결과")
+                    st.write(translated)
                 except Exception as exc:
-                    st.error(f"요청 처리 중 오류가 발생했습니다: {exc}")
+                    st.error(f"번역 요청 처리 중 오류가 발생했습니다: {exc}")
+
+with tab_feedback:
+    feedback_text = st.text_area("피드백 받을 글을 입력하세요.", height=220, key="feedback_text")
+    if st.button("피드백 받기", key="feedback_button"):
+        if not feedback_text.strip():
+            st.warning("텍스트를 입력하세요.")
+        elif not has_api_key:
+            require_api_key()
+        else:
+            with st.spinner("피드백 작성 중..."):
+                try:
+                    response = client.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": (
+                                    "You are a writing coach. Provide concise, constructive Korean feedback on clarity, "
+                                    "tone, and structure. Include specific suggestions and an improved sample rewrite "
+                                    "no longer than 3 sentences."
+                                ),
+                            },
+                            {"role": "user", "content": feedback_text},
+                        ],
+                        temperature=0.4,
+                        max_tokens=320,
+                    )
+                    feedback = response.choices[0].message.content.strip()
+                    st.success("피드백 결과")
+                    st.write(feedback)
+                except Exception as exc:
+                    st.error(f"피드백 요청 처리 중 오류가 발생했습니다: {exc}")
