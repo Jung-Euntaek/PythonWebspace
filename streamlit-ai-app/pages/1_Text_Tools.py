@@ -9,6 +9,10 @@ import streamlit as st
 st.title("텍스트 도구")
 st.write("요약, 번역, 글쓰기 피드백, 텍스트 길이 시각화를 제공합니다.")
 
+if not st.session_state.get("logged_in", False):
+    st.error("비밀번호를 먼저 입력해야 합니다. 홈에서 로그인 후 다시 시도하세요.")
+    st.stop()
+
 with st.expander("도움말 보기"):
     st.markdown(
         """
@@ -26,10 +30,8 @@ if not has_api_key:
     st.sidebar.warning("홈에서 Gemini API Key를 입력하세요.")
 
 AVAILABLE_MODELS = [
-    "gemini-2.0-flash-lite",
-    "gemini-1.5-pro-latest",
-    "gemini-1.0-pro",
-    "text-bison-001",  # 구버전 라이브러리 호환용
+    "gemini-2.5-flash",
+    "gemini-2.0-flash"
 ]
 selected_model = st.sidebar.selectbox("Gemini 모델 선택", AVAILABLE_MODELS, index=0)
 
@@ -67,7 +69,7 @@ def log_history(action: str, input_text: str, output_text: str, model_name: str)
 
 def generate_with_fallback(prompt: str):
     """
-    선택한 모델이 404 등을 반환할 때를 대비해 호환 모델로 순차 시도.
+    선택 모델이 404/제한 등으로 실패할 때 호환 모델로 순차 시도.
     반환: (응답 텍스트, 사용 모델명) 또는 (None, None)
     """
     if not has_api_key:
@@ -76,7 +78,7 @@ def generate_with_fallback(prompt: str):
 
     errors = []
     fallback_models = []
-    for name in [selected_model, "text-bison-001"]:
+    for name in [selected_model, "gemini-2.5-flash", "gemini-2.0-flash"]:
         if name not in fallback_models:
             fallback_models.append(name)
 

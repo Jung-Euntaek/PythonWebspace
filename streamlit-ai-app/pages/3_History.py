@@ -7,6 +7,10 @@ import streamlit as st
 st.title("실행 이력")
 st.write("텍스트 도구에서 실행된 요약/번역/피드백 결과를 확인하고 검색할 수 있습니다.")
 
+if not st.session_state.get("logged_in", False):
+    st.error("비밀번호를 먼저 입력해야 합니다. 홈에서 로그인 후 다시 시도하세요.")
+    st.stop()
+
 HISTORY_PATH = "history.csv"
 
 if not os.path.exists(HISTORY_PATH):
