@@ -34,15 +34,18 @@ if gemini_key:
 else:
     st.sidebar.info("Gemini API Key를 입력하세요. 다른 페이지에서 그대로 사용됩니다.")
 
-# 사이드바의 자동 생성 최상단 항목("app") 숨기기
-hide_sidebar_title = """
+# 기본 첫 항목(app)을 숨기고 HOME 링크 추가
+st.sidebar.page_link("app.py", label="HOME", icon="🏠")
+st.markdown(
+    """
     <style>
         [data-testid="stSidebarNav"] ul li:nth-of-type(1) {
             display: none !important;
         }
     </style>
-"""
-st.markdown(hide_sidebar_title, unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
 
 st.subheader("빠른 이동")
 col1, col2, col3 = st.columns(3)

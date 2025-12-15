@@ -13,6 +13,19 @@ if not st.session_state.get("logged_in", False):
     st.error("비밀번호를 먼저 입력해야 합니다. 홈에서 로그인 후 다시 시도하세요.")
     st.stop()
 
+# 기본 첫 항목(app)을 숨기고 HOME 링크 추가
+st.sidebar.page_link("app.py", label="HOME", icon="🏠")
+st.markdown(
+    """
+    <style>
+        [data-testid="stSidebarNav"] ul li:nth-of-type(1) {
+            display: none !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 with st.expander("도움말 보기"):
     st.markdown(
         """
@@ -30,8 +43,8 @@ if not has_api_key:
     st.sidebar.warning("홈에서 Gemini API Key를 입력하세요.")
 
 AVAILABLE_MODELS = [
+    "gemini-2.5-flash-lite",
     "gemini-2.5-flash",
-    "gemini-2.0-flash"
 ]
 selected_model = st.sidebar.selectbox("Gemini 모델 선택", AVAILABLE_MODELS, index=0)
 
@@ -69,7 +82,7 @@ def log_history(action: str, input_text: str, output_text: str, model_name: str)
 
 def generate_with_fallback(prompt: str):
     """
-    선택 모델이 404/제한 등으로 실패할 때 호환 모델로 순차 시도.
+    선택 모델이 실패할 경우 호환 모델로 순차 시도.
     반환: (응답 텍스트, 사용 모델명) 또는 (None, None)
     """
     if not has_api_key:
@@ -78,7 +91,7 @@ def generate_with_fallback(prompt: str):
 
     errors = []
     fallback_models = []
-    for name in [selected_model, "gemini-2.5-flash", "gemini-2.0-flash"]:
+    for name in [selected_model, "gemini-2.5-flash-lite", "gemini-2.5-flash"]:
         if name not in fallback_models:
             fallback_models.append(name)
 
