@@ -82,3 +82,26 @@ p {
   background: #f3f5ff;
   border: 1px solid #e2e7ff;
 }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.table th, .table td {
+  border-top: 1px solid #eceef2;
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  font-weight: 700;
+  color: #222;
+}
+
+.table td {
+  color: #444;
+}

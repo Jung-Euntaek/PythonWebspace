@@ -27,3 +27,6 @@ htmlcov/
 .idea/
 *.code-workspace
 .vscode/
+
+# Data files
+history.csv

@@ -1,3 +1,5 @@
+import csv
+from datetime import datetime
 import os
 from flask import Flask, render_template, request
 from dotenv import load_dotenv
@@ -15,11 +17,48 @@ def summarize_with_gemini(text: str) -> str:
     genai.configure(api_key=api_key)
 
     # ✅ 우선 안정적으로 2.5-flash 사용
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    model_name = "gemini-2.5-flash"
+    model = genai.GenerativeModel(model_name)
     prompt = f"다음 글을 한국어로 핵심만 간결하게 요약해줘.\n\n{text}"
 
     resp = model.generate_content(prompt)
-    return resp.text.strip()
+    return resp.text.strip(), model_name
+
+HISTORY_PATH = "history.csv"
+
+def append_history(action: str, input_text: str, output_text: str, model_name: str) -> None:
+    """요약 결과를 CSV에 누적 저장."""
+    is_new_file = not os.path.exists(HISTORY_PATH)
+    with open(HISTORY_PATH, "a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["timestamp", "action", "model", "input_preview", "output_preview"],
+        )
+        if is_new_file:
+            writer.writeheader()
+
+        writer.writerow(
+            {
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "action": action,
+                "model": model_name,
+                "input_preview": (input_text[:120] + "…") if len(input_text) > 120 else input_text,
+                "output_preview": (output_text[:120] + "…") if len(output_text) > 120 else output_text,
+            }
+        )
+
+def read_history(limit: int = 50):
+    """CSV에서 최근 기록을 읽어 리스트로 반환."""
+    if not os.path.exists(HISTORY_PATH):
+        return []
+
+    with open(HISTORY_PATH, "r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
+
+    rows.reverse()  # 최신이 위로 오게
+    return rows[:limit]
+
 
 @app.route("/")
 def home():
@@ -36,7 +75,12 @@ def tools():
 
         if text:
             try:
-                result = summarize_with_gemini(text)
+                summary, model_used = summarize_with_gemini(text)
+                result = summary
+
+                if summary and "오류" not in summary:
+                    append_history("summary", text, summary, model_used)
+
             except Exception as e:
                 result = f"Gemini 호출 중 오류가 발생했습니다: {e}"
         else:
@@ -46,7 +90,8 @@ def tools():
 
 @app.route("/history")
 def history():
-    return render_template("history.html")
+    rows = read_history(limit=50)
+    return render_template("history.html", rows=rows)
 
 if __name__ == "__main__":
     app.run(debug=True)
