@@ -1,6 +1,25 @@
+import os
 from flask import Flask, render_template, request
+from dotenv import load_dotenv
+import google.generativeai as genai
+
+load_dotenv()  # ✅ .env 읽기
 
 app = Flask(__name__)
+
+def summarize_with_gemini(text: str) -> str:
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        return "서버에 GEMINI_API_KEY가 설정되지 않았습니다. (.env 확인)"
+
+    genai.configure(api_key=api_key)
+
+    # ✅ 우선 안정적으로 2.5-flash 사용
+    model = genai.GenerativeModel("gemini-2.5-flash")
+    prompt = f"다음 글을 한국어로 핵심만 간결하게 요약해줘.\n\n{text}"
+
+    resp = model.generate_content(prompt)
+    return resp.text.strip()
 
 @app.route("/")
 def home():
@@ -16,8 +35,10 @@ def tools():
         text = request.form.get("text", "").strip()
 
         if text:
-            # ✅ 지금은 AI 대신 "서버가 처리했다"는 걸 보여주기 위해 간단히 가공
-            result = f"입력한 글자 수: {len(text)}"
+            try:
+                result = summarize_with_gemini(text)
+            except Exception as e:
+                result = f"Gemini 호출 중 오류가 발생했습니다: {e}"
         else:
             result = "텍스트를 입력해 주세요."
 
