@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Tools</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Tools 페이지</h1>
+    <p>텍스트를 입력하고 실행하면 서버가 처리한 결과를 보여줍니다.</p>
+
+    <form method="POST" action="/tools">
+      <textarea name="text" rows="8" style="width: 100%;" placeholder="여기에 텍스트를 입력하세요.">{{ text }}</textarea>
+      <div style="margin-top: 12px;">
+        <button type="submit">실행</button>
+      </div>
+    </form>
+
+    {% if result %}
+      <hr style="margin: 20px 0;">
+      <h2>결과</h2>
+      <p><strong>{{ result }}</strong></p>
+    {% endif %}
+
+    <hr style="margin: 20px 0;">
+    <a href="/">← Home으로</a>
+  </main>
+</body>
+</html>
