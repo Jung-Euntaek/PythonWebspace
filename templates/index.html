@@ -1,26 +1,16 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>Home</title>
+{% extends "base.html" %}
 
-  <!-- ⭐ CSS 연결 핵심 -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% block title %}Home{% endblock %}
 
-    <main>
-    <h1>안녕하세요, {{ name }} 님</h1>
+{% block content %}
+  <h1>안녕하세요, {{ name }} 님</h1>
 
-    <p>Flask로 만든 여러 페이지 예제입니다.</p>
+  <p>
+    이 페이지는 Flask가 Python 코드에서 HTML 템플릿을 렌더링하여
+    브라우저에 전달한 결과입니다.
+  </p>
 
-    <nav>
-        <ul>
-        <li><a href="/tools">Tools</a></li>
-        <li><a href="/history">History</a></li>
-        </ul>
-    </nav>
-    </main>
-
-</body>
-</html>
+  <p>
+    위의 이름은 <strong>Python(app.py)</strong>에서 전달된 값입니다.
+  </p>
+{% endblock %}

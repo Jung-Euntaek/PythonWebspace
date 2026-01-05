@@ -1,44 +1,35 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>History</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <main>
-    <h1>History</h1>
-    <p>최근 실행 기록을 보여줍니다. (최대 50개)</p>
+{% extends "base.html" %}
 
-    {% if rows and rows|length > 0 %}
-      <table class="table">
-        <thead>
+{% block title %}History{% endblock %}
+
+{% block content %}
+  <h1>History</h1>
+  <p>최근 실행 기록을 보여줍니다. (최대 50개)</p>
+
+  {% if rows and rows|length > 0 %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>시간</th>
+          <th>동작</th>
+          <th>모델</th>
+          <th>입력</th>
+          <th>출력</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
           <tr>
-            <th>시간</th>
-            <th>동작</th>
-            <th>모델</th>
-            <th>입력</th>
-            <th>출력</th>
+            <td>{{ r.timestamp }}</td>
+            <td>{{ r.action }}</td>
+            <td>{{ r.model }}</td>
+            <td>{{ r.input_preview }}</td>
+            <td>{{ r.output_preview }}</td>
           </tr>
-        </thead>
-        <tbody>
-          {% for r in rows %}
-            <tr>
-              <td>{{ r.timestamp }}</td>
-              <td>{{ r.action }}</td>
-              <td>{{ r.model }}</td>
-              <td>{{ r.input_preview }}</td>
-              <td>{{ r.output_preview }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p>아직 기록이 없습니다. Tools에서 요약을 실행해 보세요.</p>
-    {% endif %}
-
-    <hr class="divider">
-    <a href="/">← Home으로</a>
-  </main>
-</body>
-</html>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>아직 기록이 없습니다. Tools에서 요약을 실행해 보세요.</p>
+  {% endif %}
+{% endblock %}

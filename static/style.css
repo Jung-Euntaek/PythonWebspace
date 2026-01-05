@@ -105,3 +105,55 @@ p {
 .table td {
   color: #444;
 }
+
+/* Layout */
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+.header {
+  border-bottom: 1px solid #eceef2;
+  background: #fff;
+}
+
+.header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.brand-link {
+  font-weight: 800;
+  text-decoration: none;
+  color: #111;
+}
+
+.nav {
+  display: flex;
+  gap: 12px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #333;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.nav-link:hover {
+  background: #f3f4f6;
+}
+
+.page {
+  padding: 22px 18px;
+}
+
+.footer {
+  border-top: 1px solid #eceef2;
+  padding: 18px 0;
+  color: #666;
+  margin-top: 28px;
+}

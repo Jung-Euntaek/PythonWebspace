@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>Tools</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <main>
-    <h1>Tools 페이지</h1>
-    <p>텍스트를 입력하고 실행하면 서버가 처리한 결과를 보여줍니다.</p>
+{% extends "base.html" %}
+
+{% block title %}Tools{% endblock %}
+
+{% block content %}
+  <h1>Tools</h1>
+  <p>텍스트를 입력하고 실행하면 서버가 요약 결과를 보여줍니다.</p>
 
   <form method="POST" action="/tools" class="form">
     <label for="text" class="label">텍스트</label>
@@ -24,9 +20,4 @@
     <h2>결과</h2>
     <p class="result"><strong>{{ result }}</strong></p>
   {% endif %}
-
-    <hr style="margin: 20px 0;">
-    <a href="/">← Home으로</a>
-  </main>`
-</body>
-</html>
+{% endblock %}
