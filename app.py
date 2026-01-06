@@ -1,7 +1,7 @@
 import csv
 from datetime import datetime
 import os
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, flash, render_template, request, redirect, session, url_for
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -72,27 +72,29 @@ def tools():
         text = request.form.get("text", "").strip()
 
         if not text:
-            session["result"] = "텍스트를 입력해 주세요."
+            flash("텍스트를 입력해 주세요.", "error")
             session["text"] = ""
             return redirect(url_for("tools"))
 
         try:
             summary, model_used = summarize_with_gemini(text)
+
             session["result"] = summary
             session["text"] = text
 
-            # 성공했을 때만 저장
             if summary and "오류" not in summary:
                 append_history("summary", text, summary, model_used)
+                flash("요약이 완료되었습니다.", "success")
+            else:
+                flash("요약은 되었지만 오류 메시지가 포함되어 있습니다.", "error")
 
         except Exception as e:
             session["result"] = f"Gemini 호출 중 오류가 발생했습니다: {e}"
             session["text"] = text
+            flash("Gemini 호출에 실패했습니다.", "error")
 
-        # ✅ POST 끝나면 무조건 redirect
         return redirect(url_for("tools"))
 
-    # ✅ 여기부터는 GET: 화면만 보여주기
     result = session.pop("result", None)
     text = session.pop("text", "")
 

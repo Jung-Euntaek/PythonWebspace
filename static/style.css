@@ -157,3 +157,28 @@ p {
   color: #666;
   margin-top: 28px;
 }
+
+.flash-wrap {
+  margin: 14px 0 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.flash {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #eceef2;
+  font-size: 14px;
+}
+
+.flash-success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #14532d;
+}
+
+.flash-error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #7f1d1d;
+}
