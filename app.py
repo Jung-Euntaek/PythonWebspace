@@ -1,13 +1,14 @@
 import csv
 from datetime import datetime
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, session, url_for
 from dotenv import load_dotenv
 import google.generativeai as genai
 
 load_dotenv()  # ✅ .env 읽기
 
 app = Flask(__name__)
+app.secret_key = "dev-secret-key"
 
 def summarize_with_gemini(text: str) -> str:
     api_key = os.getenv("GEMINI_API_KEY", "").strip()
@@ -67,24 +68,33 @@ def home():
 
 @app.route("/tools", methods=["GET", "POST"])
 def tools():
-    result = None
-    text = ""
-
     if request.method == "POST":
         text = request.form.get("text", "").strip()
 
-        if text:
-            try:
-                summary, model_used = summarize_with_gemini(text)
-                result = summary
+        if not text:
+            session["result"] = "텍스트를 입력해 주세요."
+            session["text"] = ""
+            return redirect(url_for("tools"))
 
-                if summary and "오류" not in summary:
-                    append_history("summary", text, summary, model_used)
+        try:
+            summary, model_used = summarize_with_gemini(text)
+            session["result"] = summary
+            session["text"] = text
 
-            except Exception as e:
-                result = f"Gemini 호출 중 오류가 발생했습니다: {e}"
-        else:
-            result = "텍스트를 입력해 주세요."
+            # 성공했을 때만 저장
+            if summary and "오류" not in summary:
+                append_history("summary", text, summary, model_used)
+
+        except Exception as e:
+            session["result"] = f"Gemini 호출 중 오류가 발생했습니다: {e}"
+            session["text"] = text
+
+        # ✅ POST 끝나면 무조건 redirect
+        return redirect(url_for("tools"))
+
+    # ✅ 여기부터는 GET: 화면만 보여주기
+    result = session.pop("result", None)
+    text = session.pop("text", "")
 
     return render_template("tools.html", result=result, text=text)
 
