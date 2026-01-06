@@ -20,7 +20,7 @@
       <tbody>
         {% for r in rows %}
           <tr>
-            <td>{{ r.timestamp }}</td>
+            <td><a href="/history/{{ loop.index0 }}">{{ r.timestamp }}</a></td>
             <td>{{ r.action }}</td>
             <td>{{ r.model }}</td>
             <td>{{ r.input_preview }}</td>

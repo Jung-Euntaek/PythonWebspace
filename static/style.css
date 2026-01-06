@@ -182,3 +182,14 @@ p {
   border-color: #fecaca;
   color: #7f1d1d;
 }
+
+.code {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #f6f7f9;
+  border: 1px solid #eceef2;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+}

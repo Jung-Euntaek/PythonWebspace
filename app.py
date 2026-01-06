@@ -28,12 +28,15 @@ def summarize_with_gemini(text: str) -> str:
 HISTORY_PATH = "history.csv"
 
 def append_history(action: str, input_text: str, output_text: str, model_name: str) -> None:
-    """요약 결과를 CSV에 누적 저장."""
     is_new_file = not os.path.exists(HISTORY_PATH)
     with open(HISTORY_PATH, "a", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
             f,
-            fieldnames=["timestamp", "action", "model", "input_preview", "output_preview"],
+            fieldnames=[
+                "timestamp", "action", "model",
+                "input", "output",
+                "input_preview", "output_preview",
+            ],
         )
         if is_new_file:
             writer.writeheader()
@@ -43,10 +46,13 @@ def append_history(action: str, input_text: str, output_text: str, model_name: s
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "action": action,
                 "model": model_name,
+                "input": input_text,
+                "output": output_text,
                 "input_preview": (input_text[:120] + "…") if len(input_text) > 120 else input_text,
                 "output_preview": (output_text[:120] + "…") if len(output_text) > 120 else output_text,
             }
         )
+
 
 def read_history(limit: int = 50):
     """CSV에서 최근 기록을 읽어 리스트로 반환."""
@@ -104,6 +110,16 @@ def tools():
 def history():
     rows = read_history(limit=50)
     return render_template("history.html", rows=rows)
+
+@app.route("/history/<int:idx>")
+def history_detail(idx: int):
+    rows = read_history(limit=200)  # 넉넉히 읽기
+    if idx < 0 or idx >= len(rows):
+        return "해당 기록을 찾을 수 없습니다.", 404
+
+    row = rows[idx]
+    return render_template("history_detail.html", row=row, idx=idx)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
