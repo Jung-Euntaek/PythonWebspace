@@ -1,4 +1,4 @@
-import csv
+import sqlite3
 from datetime import datetime
 import os
 from flask import Flask, flash, render_template, request, redirect, session, url_for
@@ -8,6 +8,7 @@ import google.generativeai as genai
 load_dotenv()  # ✅ .env 읽기
 
 app = Flask(__name__)
+
 app.secret_key = "dev-secret-key"
 
 def summarize_with_gemini(text: str) -> str:
@@ -25,47 +26,84 @@ def summarize_with_gemini(text: str) -> str:
     resp = model.generate_content(prompt)
     return resp.text.strip(), model_name
 
-HISTORY_PATH = "history.csv"
+DB_PATH = "app.db"
 
-def append_history(action: str, input_text: str, output_text: str, model_name: str) -> None:
-    is_new_file = not os.path.exists(HISTORY_PATH)
-    with open(HISTORY_PATH, "a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(
-            f,
-            fieldnames=[
-                "timestamp", "action", "model",
-                "input", "output",
-                "input_preview", "output_preview",
-            ],
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # dict처럼 접근 가능
+    return conn
+
+def init_db():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS history (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          timestamp TEXT NOT NULL,
+          action TEXT NOT NULL,
+          model TEXT NOT NULL,
+          input TEXT NOT NULL,
+          output TEXT NOT NULL
         )
-        if is_new_file:
-            writer.writeheader()
+        """
+    )
+    conn.commit()
+    conn.close()
 
-        writer.writerow(
-            {
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "action": action,
-                "model": model_name,
-                "input": input_text,
-                "output": output_text,
-                "input_preview": (input_text[:120] + "…") if len(input_text) > 120 else input_text,
-                "output_preview": (output_text[:120] + "…") if len(output_text) > 120 else output_text,
-            }
-        )
+init_db()
 
+def insert_history(action: str, input_text: str, output_text: str, model_name: str) -> None:
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO history (timestamp, action, model, input, output)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            action,
+            model_name,
+            input_text,
+            output_text,
+        ),
+    )
+    conn.commit()
+    conn.close()
 
-def read_history(limit: int = 50):
-    """CSV에서 최근 기록을 읽어 리스트로 반환."""
-    if not os.path.exists(HISTORY_PATH):
-        return []
+def fetch_history(limit: int = 50):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, timestamp, action, model,
+               input AS input_full,
+               output AS output_full
+        FROM history
+        ORDER BY id DESC
+        LIMIT ?
+        """,
+        (limit,),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return rows
 
-    with open(HISTORY_PATH, "r", newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        rows = list(reader)
-
-    rows.reverse()  # 최신이 위로 오게
-    return rows[:limit]
-
+def fetch_history_one(history_id: int):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, timestamp, action, model, input, output
+        FROM history
+        WHERE id = ?
+        """,
+        (history_id,),
+    )
+    row = cur.fetchone()
+    conn.close()
+    return row
 
 @app.route("/")
 def home():
@@ -89,7 +127,7 @@ def tools():
             session["text"] = text
 
             if summary and "오류" not in summary:
-                append_history("summary", text, summary, model_used)
+                insert_history("summary", text, summary, model_used)
                 flash("요약이 완료되었습니다.", "success")
             else:
                 flash("요약은 되었지만 오류 메시지가 포함되어 있습니다.", "error")
@@ -108,18 +146,15 @@ def tools():
 
 @app.route("/history")
 def history():
-    rows = read_history(limit=50)
+    rows = fetch_history(limit=50)
     return render_template("history.html", rows=rows)
 
-@app.route("/history/<int:idx>")
-def history_detail(idx: int):
-    rows = read_history(limit=200)  # 넉넉히 읽기
-    if idx < 0 or idx >= len(rows):
+@app.route("/history/<int:history_id>")
+def history_detail(history_id: int):
+    row = fetch_history_one(history_id)
+    if row is None:
         return "해당 기록을 찾을 수 없습니다.", 404
-
-    row = rows[idx]
-    return render_template("history_detail.html", row=row, idx=idx)
-
+    return render_template("history_detail.html", row=row, idx=history_id)
 
 if __name__ == "__main__":
     app.run(debug=True)

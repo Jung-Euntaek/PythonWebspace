@@ -30,3 +30,4 @@ htmlcov/
 
 # Data files
 history.csv
+app.db

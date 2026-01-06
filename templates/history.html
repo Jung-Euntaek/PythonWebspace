@@ -20,11 +20,11 @@
       <tbody>
         {% for r in rows %}
           <tr>
-            <td><a href="/history/{{ loop.index0 }}">{{ r.timestamp }}</a></td>
+            <td><a href="/history/{{ r.id }}">{{ r.timestamp }}</a></td>
             <td>{{ r.action }}</td>
             <td>{{ r.model }}</td>
-            <td>{{ r.input_preview }}</td>
-            <td>{{ r.output_preview }}</td>
+            <td>{{ (r.input_full[:120] ~ "…") if r.input_full|length > 120 else r.input_full }}</td>
+            <td>{{ (r.output_full[:120] ~ "…") if r.output_full|length > 120 else r.output_full }}</td>
           </tr>
         {% endfor %}
       </tbody>
