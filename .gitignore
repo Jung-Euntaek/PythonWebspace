@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# SQLite DB
+app.db
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+*.code-workspace
