@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Tools{% endblock %}
+
+{% block content %}
+  <h1>텍스트 도구</h1>
+  <p>입력한 텍스트를 간단히 요약해 보여줍니다. (지금은 테스트 버전)</p>
+
+  <form method="POST" action="/tools" class="form">
+    <label class="label" for="text">텍스트</label>
+    <textarea id="text" name="text" class="textarea" rows="10"
+              placeholder="여기에 텍스트를 붙여넣으세요.">{{ text or "" }}</textarea>
+
+    <div class="actions">
+      <button type="submit" class="button">요약하기</button>
+      <a href="/tools" class="button secondary">초기화</a>
+    </div>
+  </form>
+
+  {% if error %}
+    <p class="alert error">{{ error }}</p>
+  {% endif %}
+
+  {% if result %}
+    <h2>결과</h2>
+    <pre class="code">{{ result }}</pre>
+  {% endif %}
+{% endblock %}
