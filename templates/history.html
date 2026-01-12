@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+
+{% block content %}
+  <h1>History</h1>
+
+  <form method="GET" action="/history" class="form">
+    <div class="actions" style="align-items:center;">
+      <input class="textarea" style="height:42px; resize:none;" type="text" name="q" value="{{ q }}" placeholder="검색어 (input/output)" />
+      <select name="action" class="textarea" style="height:42px;">
+        <option value="all" {% if action == "all" %}selected{% endif %}>all</option>
+        <option value="summary" {% if action == "summary" %}selected{% endif %}>summary</option>
+        <option value="translate" {% if action == "translate" %}selected{% endif %}>translate</option>
+        <option value="feedback" {% if action == "feedback" %}selected{% endif %}>feedback</option>
+      </select>
+      <button class="button" type="submit">검색</button>
+    </div>
+  </form>
+
+  {% if rows|length == 0 %}
+    <p style="margin-top:16px;">기록이 없습니다.</p>
+  {% else %}
+    <div style="margin-top:16px; display:flex; flex-direction:column; gap:12px;">
+      {% for r in rows %}
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; gap:12px; align-items:center;">
+            <div>
+              <strong>#{{ r.id }}</strong>
+              · {{ r.timestamp }}
+              · <span>{{ r.action }}</span>
+              · <span>{{ r.model }}</span>
+            </div>
+            <a class="button secondary" href="/history/{{ r.id }}">상세</a>
+          </div>
+
+          <hr class="divider" style="margin:14px 0;">
+
+          <div style="font-size:14px; color:#333;">
+            <div><strong>입력:</strong> {{ r.input_preview }}{% if r.input_preview|length >= 120 %}…{% endif %}</div>
+            <div style="margin-top:8px;"><strong>출력:</strong> {{ r.output_preview }}{% if r.output_preview|length >= 120 %}…{% endif %}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

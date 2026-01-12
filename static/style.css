@@ -124,3 +124,8 @@ body {
   padding: 28px 32px;   /* ⭐ 핵심: 좌우 여백 확보 */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
+
+.divider {
+  border: none;
+  border-top: 1px solid #eceef2;
+}
