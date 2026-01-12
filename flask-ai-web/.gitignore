@@ -1,0 +1,33 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Logs / temp
+*.log
+*.swp
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# Flask
+instance/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS / Editors
+.DS_Store
+.idea/
+*.code-workspace
+.vscode/
+
+# Data files
+history.csv
+app.db

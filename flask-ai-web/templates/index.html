@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+  <h1>안녕하세요, {{ name }} 님</h1>
+
+  <p>
+    이 페이지는 Flask가 Python 코드에서 HTML 템플릿을 렌더링하여
+    브라우저에 전달한 결과입니다.
+  </p>
+
+  <p>
+    위의 이름은 <strong>Python(app.py)</strong>에서 전달된 값입니다.
+  </p>
+{% endblock %}

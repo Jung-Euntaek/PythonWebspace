@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}History Detail{% endblock %}
+
+{% block content %}
+  <h1>History 상세</h1>
+  <p>
+    <strong>시간:</strong> {{ row.timestamp }}<br>
+    <strong>동작:</strong> {{ row.action }}<br>
+    <strong>모델:</strong> {{ row.model }}
+  </p>
+
+  <hr class="divider">
+
+  <h2>입력(원문)</h2>
+  <pre class="code">{{ row["input"] }}</pre>
+
+  <h2>출력(결과)</h2>
+  <pre class="code">{{ row["output"] }}</pre>
+
+  <hr class="divider">
+    <form method="POST"
+        action="/history/{{ row['id'] }}/delete"
+        onsubmit="return confirm('이 기록을 삭제할까요?');"
+        style="margin-top: 12px;">
+        <button type="submit" class="button danger">이 기록 삭제</button>
+    </form>
+  <a href="/history">← History로</a>
+{% endblock %}

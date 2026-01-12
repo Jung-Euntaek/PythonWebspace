@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}History{% endblock %}
+
+{% block content %}
+  <h1>History</h1>
+  <form method="GET" action="/history" class="form">
+  <div class="row">
+    <div>
+      <label class="label" for="action">동작</label>
+      <select id="action" name="action" class="input">
+        <option value="all" {% if action == "all" %}selected{% endif %}>전체</option>
+        <option value="summary" {% if action == "summary" %}selected{% endif %}>summary</option>
+        <option value="translate" {% if action == "translate" %}selected{% endif %}>translate</option>
+        <option value="feedback" {% if action == "feedback" %}selected{% endif %}>feedback</option>
+      </select>
+    </div>
+
+    <div style="flex:1;">
+      <label class="label" for="q">검색</label>
+      <input id="q" name="q" class="input" value="{{ q }}" placeholder="input/output에서 검색" />
+    </div>
+
+    <div class="actions" style="align-self:end;">
+      <button type="submit" class="button">적용</button>
+      <a href="/history" class="button secondary">초기화</a>
+    </div>
+  </div>
+  </form>
+
+  <p>최근 실행 기록을 보여줍니다. (최대 50개)</p>
+
+  {% if rows and rows|length > 0 %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>시간</th>
+          <th>동작</th>
+          <th>모델</th>
+          <th>입력</th>
+          <th>출력</th>
+          <th>삭제</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <td><a href="/history/{{ r.id }}">{{ r.timestamp }}</a></td>
+            <td>{{ r.action }}</td>
+            <td>{{ r.model }}</td>
+            <td>{{ (r.input_full[:120] ~ "…") if r.input_full|length > 120 else r.input_full }}</td>
+            <td>{{ (r.output_full[:120] ~ "…") if r.output_full|length > 120 else r.output_full }}</td>
+            <td>
+              <form method="POST"
+                    action="/history/{{ r.id }}/delete?action={{ action }}&q={{ q }}"
+                    onsubmit="return confirm('이 기록을 삭제할까요?');">
+                <button type="submit" class="button danger">삭제</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>아직 기록이 없습니다. Tools에서 요약을 실행해 보세요.</p>
+  {% endif %}
+{% endblock %}
